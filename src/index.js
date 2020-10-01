@@ -52,6 +52,7 @@ var app1 = new Vue({
         job_folder: '',
         bin_folder: '',
         kit_folder: '',
+        import_status: {},
         
 
         msgRecvd    : '[Nothing]',
@@ -142,14 +143,18 @@ var app1 = new Vue({
             //console.info('[indexjs:uibuilder.onChange] msg received from Node-RED server:', newVal)
             
              // Change value
-            if (msg.properties.hasOwnProperty('bom_extension')) vueApp.bom_extension = msg.properties.bom_extension
-            if (msg.properties.hasOwnProperty('directory')) vueApp.directory = msg.properties.directory
-            if (msg.properties.hasOwnProperty('kit_extension')) vueApp.kit_extension = msg.properties.kit_extension
+            if (msg.hasOwnProperty('properties')){
+                if (msg.properties.hasOwnProperty('bom_extension')) vueApp.bom_extension = msg.properties.bom_extension
+                if (msg.properties.hasOwnProperty('directory')) vueApp.directory = msg.properties.directory
+                if (msg.properties.hasOwnProperty('kit_extension')) vueApp.kit_extension = msg.properties.kit_extension
+                if (msg.properties.hasOwnProperty('download_path')) vueApp.path = msg.properties.download_path
+                if (msg.properties.hasOwnProperty('job_folder')) vueApp.job_folder = msg.properties.job_folder
+                if (msg.properties.hasOwnProperty('kit_folder')) vueApp.kit_folder = msg.properties.kit_folder    
+                if (msg.properties.hasOwnProperty('bin_folder')) vueApp.bin_folder = msg.properties.bin_folder 
+            }
             if (msg.hasOwnProperty('download_enabled')) vueApp.download_enabled = msg.download_enabled.state
-            if (msg.properties.hasOwnProperty('download_path')) vueApp.path = msg.properties.download_path
-            if (msg.properties.hasOwnProperty('job_folder')) vueApp.job_folder = msg.properties.job_folder
-            if (msg.properties.hasOwnProperty('kit_folder')) vueApp.kit_folder = msg.properties.kit_folder    
-            if (msg.properties.hasOwnProperty('bin_folder')) vueApp.bin_folder = msg.properties.bin_folder           
+            if (msg.hasOwnProperty('import_status')) vueApp.import_status = msg.properties.import_status 
+            
             vueApp.msgRecvd = newVal
         })
         // As we receive new messages, we get an updated count as well

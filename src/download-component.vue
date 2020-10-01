@@ -5,7 +5,7 @@
 		<p>Kardex import directory</p>
 		
 		<b-input-group prepend="Network file path" class="mt-3">
-			<b-form-input :disabled="!enabled" v-model="updatedPath" :state="pathState" type="text" :placeholder="path" @input="pathChange"></b-form-input>
+			<b-form-input :disabled="!enabled" v-model="updatedPath" :state="pathState" type="text" :placeholder="path"></b-form-input>
             <b-form-invalid-feedback id="path-feedback">
                 Invalid path - must be of the form '\\server\path'!
             </b-form-invalid-feedback>
@@ -32,9 +32,9 @@
 		<p></p>
 		<b-button :disabled="!enabled" :variant="getState" v-on:click="download">{{ button_text }}</b-button>
         </b-form>
-        
         <p></p>
-        {{ enabled }}
+        <pre v-html="getStatus" class="syntax-highlight"></pre>
+       
 	</div>
 </template>
 
@@ -51,6 +51,7 @@ module.exports = {
         'job_folder': {type: String, default: '*Job_Import'},
         'bin_folder': {type: String, default: '*Bin_Import'},
         'kit_folder': {type: String, default: '*Kit_Import'},
+        'import_status': {type: Object, default: {type: 1, message:'hello'}},
     },
     directives: {
         init: {
@@ -86,7 +87,12 @@ module.exports = {
 	    },
 	    getPath: function() {
 	        return this.path;
-	    }
+	    },
+	    getStatus: function() {
+            var import_status = this.import_status
+            console.log(import_status)
+            return this.syntaxHighlight(import_status)
+        },
     }, // --- End of computed --- //
     methods: {
         download() {
@@ -138,11 +144,26 @@ module.exports = {
 			}
 
 	    },
-        pathChange(evt) {
-			// handle file changes
-			if (this.updatedPath = '') this.updatedPath = this.getPath;
-
-        },
+	    syntaxHighlight: function(json) {
+            json = JSON.stringify(json, undefined, 4)
+            json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+            json = json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
+                var cls = 'number'
+                if (/^"/.test(match)) {
+                    if (/:$/.test(match)) {
+                        cls = 'key'
+                    } else {
+                        cls = 'string'
+                    }
+                } else if (/true|false/.test(match)) {
+                    cls = 'boolean'
+                } else if (/null/.test(match)) {
+                    cls = 'null'
+                }
+                return '<span class="' + cls + '">' + match + '</span>'
+            })
+            return json
+        }, // --- End of syntaxHighlight --- //
     }, // --- End of methods --- //
     watch: {
        
@@ -178,5 +199,15 @@ module.exports = {
 
 } 
 </script>
+
+<style scoped>
+    /*  Colours for Syntax Highlighted pre's */
+    .syntax-highlight {color:white;background-color:black;padding:5px 10px;}
+    .syntax-highlight > .key {color:#ffbf35}
+    .syntax-highlight > .string {color:#5dff39;}
+    .syntax-highlight > .number {color:#70aeff;}
+    .syntax-highlight > .boolean {color:#b993ff;}
+</style>
+
 
 // EOF
