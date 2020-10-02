@@ -33,8 +33,19 @@
 		<b-button :disabled="!enabled" :variant="getState" v-on:click="download">{{ button_text }}</b-button>
         </b-form>
         <p></p>
-        <pre v-html="getStatus" class="syntax-highlight"></pre>
-       
+    
+        <div v-if="download_started" class="mt-3" id="download_display">Download Status:
+		    <ul>
+                <li
+                    v-for="item in display_items" 
+                    :key="item.id"
+                    :class="syntaxHighlight(item.type)"
+                    class="syntax-highlight"
+                >
+                   {{ item.message }}
+                </li>
+			</ul> 
+		</div>
 	</div>
 </template>
 
@@ -76,6 +87,8 @@ module.exports = {
 			jobState : null,
 			updatedBinFolder : '',
 			binState : null,
+			display_items: [],
+			download_started: false,
 		}
     }, // --- End of data --- //
     computed: {
@@ -88,11 +101,6 @@ module.exports = {
 	    getPath: function() {
 	        return this.path;
 	    },
-	    getStatus: function() {
-            var import_status = this.import_status
-            console.log(import_status)
-            return this.syntaxHighlight(import_status)
-        },
     }, // --- End of computed --- //
     methods: {
         download() {
@@ -144,29 +152,33 @@ module.exports = {
 			}
 
 	    },
-	    syntaxHighlight: function(json) {
-            json = JSON.stringify(json, undefined, 4)
-            json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-            json = json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
-                var cls = 'number'
-                if (/^"/.test(match)) {
-                    if (/:$/.test(match)) {
-                        cls = 'key'
-                    } else {
-                        cls = 'string'
-                    }
-                } else if (/true|false/.test(match)) {
-                    cls = 'boolean'
-                } else if (/null/.test(match)) {
-                    cls = 'null'
-                }
-                return '<span class="' + cls + '">' + match + '</span>'
-            })
-            return json
+	    syntaxHighlight: function(type) {
+	        var cls = 'none';
+            switch(type){
+                case 1:
+                    cls = 'warn';
+                    break;
+                case 2:
+                    cls = 'good';
+                    break;
+                case 3:
+                    cls = 'fail';
+                    break;
+                default:
+                    cls = 'none';
+            }
+            return cls
         }, // --- End of syntaxHighlight --- //
     }, // --- End of methods --- //
     watch: {
-       
+       import_status: function(val, oldVal) {
+            var import_status = val
+            console.log(val)
+            if (import_status !== null && typeof import_status === 'object' && val.id !== oldVal.id){
+                this.display_items.push(import_status)
+                this.download_started = true
+            }
+        }
     },	// --- End of watches --- //
     // Available hooks: init,mounted,updated,destroyed
     mounted: function(){
@@ -203,10 +215,11 @@ module.exports = {
 <style scoped>
     /*  Colours for Syntax Highlighted pre's */
     .syntax-highlight {color:white;background-color:black;padding:5px 10px;}
-    .syntax-highlight > .key {color:#ffbf35}
-    .syntax-highlight > .string {color:#5dff39;}
-    .syntax-highlight > .number {color:#70aeff;}
-    .syntax-highlight > .boolean {color:#b993ff;}
+    .warn {color:#ffbf35} //yellow
+    .good {color:#5dff39;} //green
+    .none {color:#70aeff;} //blue
+    .spare {color:#b993ff;} //purple
+    .fail {color:#fc0000;} //red
 </style>
 
 

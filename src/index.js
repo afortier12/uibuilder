@@ -52,7 +52,7 @@ var app1 = new Vue({
         job_folder: '',
         bin_folder: '',
         kit_folder: '',
-        import_status: {},
+        import_status: {type: 0, message:'hello'},
         
 
         msgRecvd    : '[Nothing]',
@@ -105,7 +105,7 @@ var app1 = new Vue({
                     cls = 'boolean'
                 } else if (/null/.test(match)) {
                     cls = 'null'
-                }
+                };
                 return '<span class="' + cls + '">' + match + '</span>'
             })
             return json
@@ -153,7 +153,7 @@ var app1 = new Vue({
                 if (msg.properties.hasOwnProperty('bin_folder')) vueApp.bin_folder = msg.properties.bin_folder 
             }
             if (msg.hasOwnProperty('download_enabled')) vueApp.download_enabled = msg.download_enabled.state
-            if (msg.hasOwnProperty('import_status')) vueApp.import_status = msg.properties.import_status 
+            if (msg.hasOwnProperty('import_status')) vueApp.import_status = msg.import_status 
             
             vueApp.msgRecvd = newVal
         })
